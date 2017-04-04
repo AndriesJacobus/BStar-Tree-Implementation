@@ -71,82 +71,23 @@ public class BPlusNode
 		return insertP(new Node(elem), false);
 	}
 
-	/*
-		@return: topmost node
-			- if there is space in contents[], return is same node
-			- else if elem inserted and new parent node is made, return is parent node
-	*/
-
-	// private BPlusNode insertP(Node ins)
-	// {
-	// 	//System.out.println("insertIndex: " + insertIndex + ", m: " + m + ", insertIndex < m: " + (insertIndex < m - 1));
-
-	// 	if (insertIndex < m - 1)
-	// 	{
-	// 		//node not full, thus can insert
-
-	// 		//check if children have space
-	// 		for (int i = 0; i < insertIndex; i++)
-	// 		{
-	// 			if (getLeftAt(i) != null && ins.getElement() < contents[i].getElement())
-	// 			{
-	// 				//System.out.println(getLeftAt(i).toString());
-	// 				setLeftAt(i, getLeftAt(i).insert(ins));
-	// 				correctChildren();
-	// 				return this;
-	// 			}
-
-	// 				if (getRightAt(i) != null && ins.getElement() > contents[i].getElement())
-	// 			if (getRightAt(i) != null && ins.getElement() > contents[i].getElement() && (contents[i + 1] == null || ins.getElement() < contents[i + 1].getElement()))
-	// 			{
-	// 				//System.out.println(getRightAt(i).toString());
-	// 				setRightAt(i, getRightAt(i).insert(ins));
-	// 				correctChildren();
-	// 				return this;
-	// 			}
-	// 		}
-
-	// 		//else, insert here
-	// 		contents[insertIndex] = ins;
-	// 		insertIndex++;
-
-	// 		organizeNodes(contents, insertIndex);
-
-	// 		return this;
-	// 	}
-	// 	else
-	// 	{
-	// 		//node must be split
-	// 		Node[] temp = new Node[m];
-
-	// 		populate(temp, ins);
-
-	// 		return split(temp);
-	// 		// return null;
-	// 	}
-	// }
-
 	private BPlusNode insertP(Node ins, boolean force)
 	{
-		//System.out.println("insertIndex: " + insertIndex + ", m: " + m + ", insertIndex < m: " + (insertIndex < m - 1));
-
-		if (insertIndex < m - 1)
+		//check if children have space
+		if (!force)
 		{
-			//node not full, thus can insert
-
-			//check if children have space
-			if (!force)
+			for (int i = 0; i < insertIndex; i++)
 			{
-				for (int i = 0; i < insertIndex; i++)
+				if (getLeftAt(i) != null && ins.getElement() < contents[i].getElement())
 				{
-					if (getLeftAt(i) != null && ins.getElement() < contents[i].getElement())
-					{
-						//System.out.println(getLeftAt(i).toString());
-						setLeftAt(i, getLeftAt(i).insert(ins));
-						correctChildren();
-						return this;
-					}
+					//System.out.println(getLeftAt(i).toString());
+					setLeftAt(i, getLeftAt(i).insert(ins));
+					correctChildren();
+					return this;
+				}
 
+				if (i + 1 < m - 1)
+				{
 					if (getRightAt(i) != null && ins.getElement() > contents[i].getElement() && (contents[i + 1] == null || ins.getElement() < contents[i + 1].getElement()))
 					{
 						//System.out.println(getRightAt(i).toString());
@@ -155,8 +96,41 @@ public class BPlusNode
 						return this;
 					}
 				}
-			}			
+				else
+				{
+					if (getRightAt(i) != null && ins.getElement() > contents[i].getElement())
+					{
+						String ret = cheatSearch(ins.getElement() + "");
+						//System.out.println("Bolognaise: " + ret.substring(ret.length() - (7 + 16), ret.length() - 7));
 
+						if (ret.substring(ret.length() - (7 + 16), ret.length() - 7).equals(getRightAt(i).toString()))
+						{
+							Node teet = getRightAt(i).insertP(ins, false).getContentNodeAt(0);
+							int red = teet.getElement();
+							teet.setElement(55);
+
+							Node[] temp = new Node[m];
+
+							populate(temp, teet);
+
+							BPlusNode finalRet = split(temp);
+
+							finalRet.getRightAt(0).removeRedundancy(red);
+
+							return finalRet;
+						}
+
+						setRightAt(i, getRightAt(i).insert(ins));
+						correctChildren();
+						return this;
+					}
+				}
+				
+			}
+		}			
+
+		if (insertIndex < m - 1)
+		{
 			//else, insert here
 			contents[insertIndex] = ins;
 			insertIndex++;
@@ -175,6 +149,130 @@ public class BPlusNode
 			return split(temp);
 			// return null;
 		}
+	}
+
+	private String cheatSearch(String elem)
+	{
+		//root will always be initialised
+
+		if (this.getInsertIndex() == 0)
+		{
+			return "*NULL*";
+		}
+		else
+		{
+			int searchE = Integer.parseInt(elem);			
+
+			String path = recursiveSearch(this, searchE);
+
+			if (path.substring(path.length() - 1, path.length()).equals(","))
+			{
+				path = path.substring(0, path.length() - 1);
+			}
+			else		//Doesn't have to be here
+			{
+				path = path.substring(0, path.length());
+			}
+
+			return path;
+		}
+
+	}
+
+	private String recursiveSearch(BPlusNode temp, int searchE)
+	{
+		String path = "";
+		boolean added = false;
+		int searchR;
+
+		for (int i = 0; i < temp.getInsertIndex(); i++)
+		{
+			if (!added)
+			{
+				path += toOut(temp);
+				added = true;
+			}
+
+			//System.out.println("Where: " + temp.elem[0] + ", NumIns: " + temp.getInsertIndex() + "\n");
+
+			searchR = temp.getContents()[i].getElement();
+
+			if (searchE == searchR)
+			{
+				return path;		//done
+			}
+			else if (searchE < searchR)
+			{
+				if (temp.getLeftAt(i) == null)
+				{
+					path += "*NULL*";
+					break;
+				}
+				else
+				{
+					path += recursiveSearch(temp.getLeftAt(i), searchE);
+					break;
+				}
+			}
+			else if (i == temp.getInsertIndex() - 1)
+			{
+				//last iteration, also look at left
+				if (searchE > searchR)
+				{
+					if (temp.getRightAt(i) == null)
+					{
+						path += "*NULL*";
+						break;
+					}
+					else
+					{
+						path += recursiveSearch(temp.getRightAt(i), searchE);
+						break;
+					}
+				}
+			}
+		}
+
+		return path;
+	}
+
+	private String toOut(BPlusNode printE)
+	{
+		String out = "";
+
+		Node[] cont = printE.getContents();
+
+		for (int i = 0; i < printE.getInsertIndex(); i++)
+		{
+			if (cont[i] == null)
+			{
+				out += "[]";
+			}
+			else
+			{
+				out += "[" + cont[i].getElement() + "]";
+			}
+
+			if (i == printE.getInsertIndex() - 1)
+			{
+				out += ",";
+			}
+		}
+
+		return out;
+	}
+
+	private boolean hasViableChildren(BPlusNode node)
+	{
+		for (int i = 0; i < insertIndex; i++)
+		{
+			if (getLeftAt(i) != null || getRightAt(i) != null)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private void populate(Node[] temp, Node ins)
@@ -205,7 +303,7 @@ public class BPlusNode
 
 		//check if is root. If it is, insert(node, true) to force
 
-		System.out.println("\n\nNode: " + toString() + ", isRoot: " + (parent == null));
+		//System.out.println("\n\nNode: " + toString() + ", isRoot: " + (parent == null));
 
 
 		if (parent == null)
@@ -214,7 +312,7 @@ public class BPlusNode
 			isRoot = true;
 		}
 
-		System.out.println("\nSplit node: [" + temp[0].getElement() + "][" + temp[1].getElement() + "][" + temp[2].getElement() + "][" + temp[3].getElement() + "][" + temp[4].getElement() + "]" + "\n");
+		//System.out.println("\nSplit node: [" + temp[0].getElement() + "][" + temp[1].getElement() + "][" + temp[2].getElement() + "][" + temp[3].getElement() + "][" + temp[4].getElement() + "]" + "\n");
 
 		if (parent == null)
 		{
@@ -234,8 +332,6 @@ public class BPlusNode
 			}
 			else if (i == middle + 1)
 			{
-				System.out.println("childOne: " + childOne.toString());
-
 				currParent = currParent.insert(new Node(temp[i].getElement()), true);
 
 				currParent.setLeftAt(currParent.getInsertIndex() - 1, childOne);
@@ -258,6 +354,28 @@ public class BPlusNode
 		childOne.setNext(childTwo);
 
 		return currParent;
+	}
+
+	private void removeRedundancy(int red)
+	{
+		Node[] replacemntContects = new Node[insertIndex - 1];
+		int c = 0;
+
+		for (int i = 0; i < insertIndex; i++)
+		{
+			if (contents[i].getElement() == red)
+			{
+				contents[i] = null;
+			}
+			else
+			{
+				replacemntContects[c] = contents[i];
+				c++;
+			}
+		}
+
+		contents = replacemntContects;
+		insertIndex--;
 	}
 
 	/*
@@ -355,6 +473,18 @@ public class BPlusNode
 		if (nodeIndex < insertIndex)
 		{
 			return contents[nodeIndex].getRight();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public Node getContentNodeAt(int nodeIndex)
+	{
+		if (nodeIndex < insertIndex)
+		{
+			return contents[nodeIndex];
 		}
 		else
 		{

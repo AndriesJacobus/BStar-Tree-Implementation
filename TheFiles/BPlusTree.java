@@ -33,6 +33,17 @@ public class BPlusTree
 		root = new BPlusNode(m);
 	}
 	
+	public BPlusTree(BPlusNode root_)
+	{
+		/*
+		The constructor.  You must create a BPlusTree object of order m,
+		where m is passed as a parameter to the constructor.
+		You may assume that m will always be valid.
+		*/
+
+		root = root_;
+	}
+	
 	public String insertElement(int element)
 	{
 		/*
@@ -43,9 +54,20 @@ public class BPlusTree
 		representatio of the new root.
 		*/
 
+		String ret = search(element);
+
 		root = root.insert(element);
-		
-		return "";
+
+		if (ret == "*NULL*")
+		{
+			ret = search(element);
+		}
+		else
+		{
+			ret = ret.substring(0, ret.length() - 7);
+		}
+	
+		return ret;
 	}
 	
 	public String insertElement(Integer element)
@@ -55,12 +77,23 @@ public class BPlusTree
 		your B+-Tree.  The method should return a string representation
 		of the path followed through the tree to find a node
 		to insert into.  If the tree was empty, return the string 
-		representatio of the new root.
+		representation of the new root.
 		*/
 
+		String ret = search((int)element);
+
 		root = root.insert((int)element);
+
+		if (ret == "*NULL*")
+		{
+			ret = search((int)element);
+		}
+		else
+		{
+			ret = ret.substring(0, ret.length() - 7);
+		}
 	
-		return "";
+		return ret;
 	}
 	
 	public String deleteElement(int element)
@@ -225,34 +258,110 @@ public class BPlusTree
 	public int height()
 	{
 		/*
-		This method should return the height of the tree.
+			This method should return the height of the tree.
 		*/
-		return 0;
+
+		return heightOfTree(root);
+	}
+
+	private int heightOfTree(BPlusNode node)
+	{
+	    if (node == null)
+	    {
+	        return 0;
+	    }
+	    else
+	    {
+	    	int current = 1;
+
+	    	Node[] nodes = node.getContents();
+	    	int max = 0;
+
+	    	for (int i = 0; i < node.getInsertIndex(); i++)
+	    	{
+	    		if (i == node.getInsertIndex() - 1)
+	    		{
+	    			max = Math.max(max, heightOfTree(node.getRightAt(i)));
+	    		}
+	    		else
+	    		{
+	    			max = Math.max(max, heightOfTree(node.getLeftAt(i)));
+	    		}
+	    	}
+
+	    	current += max;
+
+	        return current;
+	    }
 	}
 	
 	public int countInternalNodes()
 	{
 		/*
-		This method should count and return the number of internal nodes.
+			This method should count and return the number of internal nodes.
+
+			=> Internal node = node between [root, leaves)
+
+			     I         ROOT (root is also an INTERNAL NODE, unless it is leaf)
+			   /   \
+			  I     I      INTERNAL NODES
+			 /     / \
+			o     o   o    EXTERNAL NODES (or leaves)
 		*/
-		return 0;
+
+		return countIntNodesRec(root);
+	}
+
+	private int countIntNodesRec(BPlusNode start)
+	{
+		if (start.getInsertIndex() == 0)
+		{
+			return 0;
+		}
+
+		int ret = 0;
+
+		for (int i = 0; i < start.getInsertIndex(); i++)
+	    {
+    		if (i == start.getInsertIndex() - 1)
+    		{
+    			//Check right
+    			if (start.getRightAt(i) != null)
+    			{
+    				ret++;
+    				countIntNodesRec(start.getRightAt(i));
+    			}
+    		}
+    		else
+    		{
+    			//Check left
+    			if (start.getLeftAt(i) != null)
+    			{
+    				ret++;
+    				countIntNodesRec(start.getLeftAt(i));
+    			}
+    		}
+	    }
+
+		return ret;
 	}
 	
 	public int countLeafNodes()
 	{
 		/*
-		This method should count and return the number of leaf nodes.
+			This method should count and return the number of leaf nodes.
 		*/
+
 		return 0;
 	}
 	
 	public int fullness()
 	{
 		/*
-		This method should return as a percentage the fullness of the tree.
-		The percentage is out of 100 and if, for example, 70 is returned,
-		it means that the tree is 70% full. A tree containing no keys is 0% 
-		full.  Round your answer up to the nearest integer.
+			This method should return as a percentage the fullness of the tree.
+			The percentage is out of 100 and if, for example, 70 is returned,
+			it means that the tree is 70% full. A tree containing no keys is 0% 
+			full.  Round your answer up to the nearest integer.
 		*/
 		
 		return 0;
@@ -261,21 +370,27 @@ public class BPlusTree
 	public String breadthFirst()
 	{
 		/*
-		This method returns a String containing the nodes in breath-first
-		order.  You should not include null nodes in the string.  The string
-		for an empty tree is simply an empty string.
+			This method returns a String containing the nodes in breath-first
+			order.  You should not include null nodes in the string.  The string
+			for an empty tree is simply an empty string.
 		*/
+
 		return "";
 	}
 	
 	public BPlusNode getFirstLeaf()
 	{
 		/*
-		This method should return the left-most leaf node in the tree.
-		If the tree is empty, return null.
+			This method should return the left-most leaf node in the tree.
+			If the tree is empty, return null.
 		*/
 		
 		return null;
+	}
+
+	public BPlusNode getRoot()
+	{
+		return root;
 	}
 
 	public String rootToString()

@@ -1,6 +1,6 @@
 /*
-Name and Surname: Andries Jacobus du Plooy
-Student/staff Number: u15226183
+	Name and Surname: Andries Jacobus du Plooy
+	Student/staff Number: u15226183
 */
 
 public class Main
@@ -24,41 +24,13 @@ public class Main
 
 		tree.insertElement(55);
 		tree.insertElement(60);
+		tree.insertElement(70);
 
-		System.out.println(tree.rootToString());
+		System.out.println("\n" + tree.rootToString()+ "\n");
+		System.out.println("Search for 70: " + tree.search(70));
+		System.out.println("Search for 40: " + tree.search(40));
+		System.out.println("Search for 30: " + tree.search(30));
 
-		System.out.println("Search for 10: " + tree.search(10));
-		
-
-		// BPlusNode root = new BPlusNode(5);
-		// root = root.insert(2);
-		// System.out.println("Root: " + root.toString());
-
-		// root = root.insert(4);
-		// System.out.println("Root: " + root.toString());
-
-		// root = root.insert(6);
-		// System.out.println("Root: " + root.toString());
-
-		// root = root.insert(8);
-		// System.out.println("Root: " + root.toString());
-
-		// root = root.insert(10);
-		// System.out.println("Root: " + root.toString());
-		// System.out.println("Root's left: " + root.getLeftAt(0).toString());
-		// System.out.println("Root's right: " + root.getRightAt(0).toString());
-
-		// root = root.insert(3);
-		// root = root.insert(7);
-
-		// System.out.println("Root: " + root.toString());
-		// System.out.println("Root's left: " + root.getLeftAt(0).toString());
-		// System.out.println("Root's right: " + root.getRightAt(0).toString());
-
-		// root = root.insert(11);
-
-		// System.out.println("Root: " + root.toString());
-		// System.out.println("Root's left: " + root.getLeftAt(0).toString());
-		// System.out.println("Root's right: " + root.getRightAt(0).toString());
+		System.out.println("\nHeight: " + tree.height());
 	}
 }
